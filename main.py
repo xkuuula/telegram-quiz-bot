@@ -38,11 +38,11 @@ def create_command_router(
     mention_store = MentionStore(settings.mentions_path)
 
     def _has_mention_access(message: Message) -> bool:
-        if settings.mention_admin_user_id is None:
+        if not settings.mention_admin_user_ids:
             return True
 
         from_user = message.from_user
-        return from_user is not None and from_user.id == settings.mention_admin_user_id
+        return from_user is not None and from_user.id in settings.mention_admin_user_ids
 
     def _extract_username(message: Message) -> str | None:
         text = message.text or ""

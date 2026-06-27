@@ -17,7 +17,7 @@ class Settings:
     bot_token: str
     chat_id: str
     send_now_user_id: int | None
-    mention_admin_user_id: int | None
+    mention_admin_user_ids: frozenset[int]
     mentions_path: Path
     pinned_poll_path: Path
     google_sheet_id: str | None
@@ -57,7 +57,9 @@ def load_settings(env_file: str | Path = ".env") -> Settings:
     project_dir = Path(__file__).resolve().parent
     credentials_path = project_dir / "credentials.json"
     send_now_user_id = _get_optional_int("SEND_NOW_USER_ID")
-    mention_admin_user_id = _get_optional_int("MENTION_ADMIN_USER_ID")
+    mention_admin_user_ids = _get_optional_ints("MENTION_ADMIN_USER_ID")
+    if not mention_admin_user_ids and send_now_user_id is not None:
+        mention_admin_user_ids = frozenset({send_now_user_id})
     mentions_path_raw = os.getenv("MENTIONS_FILE", "").strip()
     mentions_path = Path(mentions_path_raw) if mentions_path_raw else project_dir / "mentions.json"
     if not mentions_path.is_absolute():
@@ -80,7 +82,7 @@ def load_settings(env_file: str | Path = ".env") -> Settings:
         bot_token=_get_required_env("BOT_TOKEN"),
         chat_id=_get_required_env("CHAT_ID"),
         send_now_user_id=send_now_user_id,
-        mention_admin_user_id=mention_admin_user_id or send_now_user_id,
+        mention_admin_user_ids=mention_admin_user_ids,
         mentions_path=mentions_path,
         pinned_poll_path=pinned_poll_path,
         google_sheet_id=google_sheet_id,
@@ -100,3 +102,20 @@ def _get_optional_int(name: str) -> int | None:
         except ValueError as exc:
             raise ConfigError(f"{name} must be a valid integer.") from exc
     return None
+
+
+def _get_optional_ints(name: str) -> frozenset[int]:
+    raw_value = os.getenv(name, "").strip()
+    if not raw_value:
+        return frozenset()
+
+    values: set[int] = set()
+    for item in raw_value.split(","):
+        item = item.strip()
+        if not item:
+            continue
+        try:
+            values.add(int(item))
+        except ValueError as exc:
+            raise ConfigError(f"{name} must contain integer IDs separated by commas.") from exc
+    return frozenset(values)

@@ -87,7 +87,7 @@ Copy-Item .env.example .env
 BOT_TOKEN=replace_with_your_telegram_bot_token
 CHAT_ID=-1001234567890
 SEND_NOW_USER_ID=123456789
-MENTION_ADMIN_USER_ID=123456789
+MENTION_ADMIN_USER_ID=123456789,987654321
 MENTIONS_FILE=mentions.json
 PINNED_POLL_FILE=pinned_poll.json
 GOOGLE_SHEET_ID=replace_with_your_google_sheet_id
@@ -117,7 +117,7 @@ TIMEZONE=Europe/Moscow
 /mentions
 ```
 
-Добавляет, удаляет и показывает людей, которых бот тегает перед каждым опросом. Доступ ограничивается `MENTION_ADMIN_USER_ID`; если он не задан, используется `SEND_NOW_USER_ID`.
+Добавляет, удаляет и показывает людей, которых бот тегает перед каждым опросом. Доступ ограничивается `MENTION_ADMIN_USER_ID`; можно указать несколько ID через запятую. Если он не задан, используется `SEND_NOW_USER_ID`.
 
 ```text
 /chatid
