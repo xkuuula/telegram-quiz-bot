@@ -15,6 +15,9 @@ from poll_sender import PollSender
 from scheduler import QuizScheduler
 
 
+APP_VERSION = "2026-06-27-no-catchup"
+
+
 def configure_logging() -> None:
     logging.basicConfig(
         level=logging.INFO,
@@ -85,7 +88,7 @@ def create_command_router(
 async def main() -> None:
     configure_logging()
     logger = logging.getLogger(__name__)
-    logger.info("Bot startup")
+    logger.info("Bot startup version=%s", APP_VERSION)
 
     try:
         settings = load_settings()
@@ -124,13 +127,11 @@ async def main() -> None:
 
     quiz_scheduler = QuizScheduler(
         poll_sender=poll_sender,
-        sheets_client=sheets_client,
         timezone_name=settings.timezone,
     )
 
     scheduler = quiz_scheduler.create_scheduler()
     scheduler.start()
-    asyncio.create_task(quiz_scheduler.catch_up_missed_jobs())
 
     try:
         logger.info("Bot polling started")
