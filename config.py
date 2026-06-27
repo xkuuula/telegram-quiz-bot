@@ -17,6 +17,9 @@ class Settings:
     bot_token: str
     chat_id: str
     send_now_user_id: int | None
+    mention_admin_user_id: int | None
+    mentions_path: Path
+    pinned_poll_path: Path
     google_sheet_id: str | None
     google_sheet_name: str
     timezone: str
@@ -53,14 +56,18 @@ def load_settings(env_file: str | Path = ".env") -> Settings:
 
     project_dir = Path(__file__).resolve().parent
     credentials_path = project_dir / "credentials.json"
-    send_now_user_id_raw = os.getenv("SEND_NOW_USER_ID", "").strip()
-    if send_now_user_id_raw:
-        try:
-            send_now_user_id = int(send_now_user_id_raw)
-        except ValueError as exc:
-            raise ConfigError("SEND_NOW_USER_ID must be a valid integer.") from exc
-    else:
-        send_now_user_id = None
+    send_now_user_id = _get_optional_int("SEND_NOW_USER_ID")
+    mention_admin_user_id = _get_optional_int("MENTION_ADMIN_USER_ID")
+    mentions_path_raw = os.getenv("MENTIONS_FILE", "").strip()
+    mentions_path = Path(mentions_path_raw) if mentions_path_raw else project_dir / "mentions.json"
+    if not mentions_path.is_absolute():
+        mentions_path = project_dir / mentions_path
+    pinned_poll_path_raw = os.getenv("PINNED_POLL_FILE", "").strip()
+    pinned_poll_path = (
+        Path(pinned_poll_path_raw) if pinned_poll_path_raw else project_dir / "pinned_poll.json"
+    )
+    if not pinned_poll_path.is_absolute():
+        pinned_poll_path = project_dir / pinned_poll_path
     google_sheet_id = os.getenv("GOOGLE_SHEET_ID", "").strip() or None
     google_sheet_name = os.getenv("GOOGLE_SHEET_NAME", "").strip() or None
     google_credentials_json = os.getenv("GOOGLE_CREDENTIALS_JSON", "").strip() or None
@@ -73,6 +80,9 @@ def load_settings(env_file: str | Path = ".env") -> Settings:
         bot_token=_get_required_env("BOT_TOKEN"),
         chat_id=_get_required_env("CHAT_ID"),
         send_now_user_id=send_now_user_id,
+        mention_admin_user_id=mention_admin_user_id or send_now_user_id,
+        mentions_path=mentions_path,
+        pinned_poll_path=pinned_poll_path,
         google_sheet_id=google_sheet_id,
         google_sheet_name=google_sheet_name or "",
         timezone=_get_required_env("TIMEZONE"),
@@ -80,3 +90,13 @@ def load_settings(env_file: str | Path = ".env") -> Settings:
         google_credentials_json=google_credentials_json,
         google_credentials_base64=google_credentials_base64,
     )
+
+
+def _get_optional_int(name: str) -> int | None:
+    raw_value = os.getenv(name, "").strip()
+    if raw_value:
+        try:
+            return int(raw_value)
+        except ValueError as exc:
+            raise ConfigError(f"{name} must be a valid integer.") from exc
+    return None

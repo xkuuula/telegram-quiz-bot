@@ -1,6 +1,8 @@
 .env
 bothost.env
 credentials.json
+mentions.json
+pinned_poll.json
 .venv/
 __pycache__/
 *.py[cod]

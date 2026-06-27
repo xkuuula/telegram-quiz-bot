@@ -7,6 +7,8 @@ Telegram-бот на Python, который берет вопросы из Googl
 - Отправка quiz-опросов в `13:00` и `20:00` по timezone из `.env`.
 - Ручная отправка следующего вопроса командой `/send_now`.
 - Ограничение `/send_now` одним пользователем через `SEND_NOW_USER_ID`.
+- Управляемый список упоминаний для опросов: `/add @username`, `/remove @username`, `/mentions`.
+- Автоматическое закрепление последнего отправленного опроса до следующего опроса.
 - Получение `chat_id` и `user_id` командой `/chatid`.
 - Источник истины по вопросам и статусам - Google Sheets.
 - Защита от повторной отправки строк со статусом `SENT`.
@@ -85,6 +87,9 @@ Copy-Item .env.example .env
 BOT_TOKEN=replace_with_your_telegram_bot_token
 CHAT_ID=-1001234567890
 SEND_NOW_USER_ID=123456789
+MENTION_ADMIN_USER_ID=123456789
+MENTIONS_FILE=mentions.json
+PINNED_POLL_FILE=pinned_poll.json
 GOOGLE_SHEET_ID=replace_with_your_google_sheet_id
 GOOGLE_SHEET_NAME=Telegram Quiz Questions
 TIMEZONE=Europe/Moscow
@@ -105,6 +110,14 @@ TIMEZONE=Europe/Moscow
 ```
 
 Отправляет следующий валидный вопрос со статусом `NOT_SENT`.
+
+```text
+/add @username
+/remove @username
+/mentions
+```
+
+Добавляет, удаляет и показывает людей, которых бот тегает перед каждым опросом. Доступ ограничивается `MENTION_ADMIN_USER_ID`; если он не задан, используется `SEND_NOW_USER_ID`.
 
 ```text
 /chatid
